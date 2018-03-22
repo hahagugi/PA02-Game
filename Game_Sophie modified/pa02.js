@@ -17,6 +17,7 @@ The user moves a cube around the board trying to knock balls into a cone
 
 	var cone;
 
+	var platform, spin, raise, counter;
 
 	var endScene, endCamera, endText;
 
@@ -101,9 +102,14 @@ The user moves a cube around the board trying to knock balls into a cone
             npcBad = createNPC(0xff0000,10,10,10);
             npcBad.position.set(25,5,-30);
             npcBad.addEventListener('collision',function(other_object){
-                if (other_object==avatar){
-                gameState.health--;
-                }
+            	if (other_object==avatar){
+          		gameState.health--;
+          		npc.__dirtyPosition = true;
+          		npc.position.set(randN(60) - 30 ,3,randN(60) - 30);
+          		if( gameState.health < 1){
+          			gameState.scene='youlost';
+          		}
+        	}
             })
             scene.add(npcBad)
 
@@ -119,6 +125,9 @@ The user moves a cube around the board trying to knock balls into a cone
 			roadBlock2.position.set(-3,0,20);
 			roadBlock2.rotateY(Math.PI/2);
 			scene.add(roadBlock2);
+		
+		counter = 0;
+		createObstacles();
 
 	}
 
@@ -130,6 +139,32 @@ The user moves a cube around the board trying to knock balls into a cone
 		return mesh;
 	}
 
+	function createObstacles(){
+  		// Create a raising platform
+    		var geometry_platform = new THREE.BoxGeometry(10, 1, 10);
+    		var material_platform = new THREE.MeshLambertMaterial( { color: 0xffffaa} );
+    		platform = new Physijs.BoxMesh(geometry_platform, material_platform, 0);
+    		platform.castShadow = true;
+    		platform.position.set(-30,0.5,-30);
+    		scene.add(platform);
+
+    		// Create a spinning wall
+    		var geometry_spin = new THREE.BoxGeometry(20, 10, 1);
+    		var material_spin = new THREE.MeshLambertMaterial( { color: 0xffaaff} );
+    		spin = new Physijs.BoxMesh(geometry_spin, material_spin, 0);
+    		spin.castShadow = true;
+    		spin.position.set(30,5,-30);
+    		scene.add(spin);
+
+
+    		// Create a raising wall
+    		var geometry_raise = new THREE.BoxGeometry(1, 10, 25);
+    		var material_raise = new THREE.MeshLambertMaterial( { color: 0xaaffff} );
+    		raise = new Physijs.BoxMesh(geometry_raise, material_raise, 0);
+    		raise.castShadow = true;
+    		raise.position.set(-30,5,30);
+    		scene.add(raise);
+  	}
 
 	function randN(n){
 		return Math.random()*n;
@@ -474,6 +509,30 @@ The user moves a cube around the board trying to knock balls into a cone
 
 	}
 
+	function updateObstacles(){
+		counter++;
+		// Move the platform
+		platform.__dirtyPosition = true;
+ 		if(((counter % 600) / 600) < 0.5){
+ 			platform.position.y += (5 / 100);
+ 		}
+ 		else{
+ 			platform.position.y -= (5 / 100);
+ 		}
+
+ 		raise.__dirtyPosition = true;
+ 		// Raise the raising wall
+ 		if(((counter % 200) / 200) < 0.5){
+ 			raise.position.y += (14 / 100);
+ 		}
+ 		else{
+ 			raise.position.y -= (14 / 100);
+ 		}
+
+ 		// Spin the spinning wall
+ 		spin.rotation.y += 0.01;
+	}
+
 
 
 	function animate() {
@@ -507,5 +566,7 @@ The user moves a cube around the board trying to knock balls into a cone
     + gameState.score
     + "  Health: "+gameState.health
     + '</div>';
+		
+		spin.__dirtyRotation = true;
 
 	}
