@@ -21,7 +21,7 @@ The user moves a cube around the board trying to knock balls into a cone
 	var endScene, endCamera, endText;
 
 
-
+    var healthTemp = 0;
 
 
 	var controls =
@@ -96,6 +96,16 @@ The user moves a cube around the board trying to knock balls into a cone
 			gameState.camera = avatarCam;
 
 			addBalls();
+        
+            // create the NPC
+            npcBad = createNPC(0xff0000,10,10,10);
+            npcBad.position.set(25,5,-30);
+            npcBad.addEventListener('collision',function(other_object){
+                if (other_object==avatar){
+                gameState.health--;
+                }
+            })
+            scene.add(npcBad)
 
 			cone = createConeMesh(4,6);
 			cone.position.set(10,3,7);
@@ -243,7 +253,14 @@ The user moves a cube around the board trying to knock balls into a cone
 		return mesh;
 	}
 
-
+    	function createNPC(color,w,h,d){
+		var geometry = new THREE.BoxGeometry( w, h, d);
+		var material = new THREE.MeshLambertMaterial( { color: color} );
+		mesh = new Physijs.BoxMesh( geometry, material );
+		//mesh = new Physijs.BoxMesh( geometry, material,0 );
+		mesh.castShadow = true;
+		return mesh;
+	}
 
 	function createGround(image){
 		// creating a textured plane which receives shadows
@@ -411,7 +428,12 @@ The user moves a cube around the board trying to knock balls into a cone
 	}
 
 
-
+    function updateNPC(){
+        npcBad.lookAt(avatar.position);
+        if (npcBad.position.distanceTo(avatar.position) < 40){
+            npcBad.setLinearVelocity(npcBad.getWorldDirection().multiplyScalar(3));
+        }
+	}
 
   function updateAvatar(){
 		"change the avatar's linear or angular velocity based on controls state (set by WSAD key presses)"
@@ -426,6 +448,13 @@ The user moves a cube around the board trying to knock balls into a cone
 			var velocity = avatar.getLinearVelocity();
 			velocity.x=velocity.z=0;
 			avatar.setLinearVelocity(velocity); //stop the xz motion
+            if (gameState.health < 10) {    
+            healthTemp += 0.005;
+                if (healthTemp > 1) {
+                    gameState.health += 1;
+                    healthTemp = 0;
+                }
+            }
 		}
 
     if (controls.fly){
@@ -460,6 +489,7 @@ The user moves a cube around the board trying to knock balls into a cone
 
 			case "main":
 				updateAvatar();
+                updateNPC();
 	    	scene.simulate();
 				if (gameState.camera!= 'none'){
 					renderer.render( scene, gameState.camera );
@@ -472,7 +502,10 @@ The user moves a cube around the board trying to knock balls into a cone
 		}
 
 		//draw heads up display ..
-	  var info = document.getElementById("info");
-		info.innerHTML='<div style="font-size:24pt">Score: ' + gameState.score + '</div>';
+	   var info = document.getElementById("info");
+		info.innerHTML='<div style="font-size:24pt">Score: '
+    + gameState.score
+    + "  Health: "+gameState.health
+    + '</div>';
 
 	}
