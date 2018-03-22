@@ -190,6 +190,7 @@ The user moves a cube around the board trying to knock balls into a cone
 						gameState.score += 1;  // add one to the score
 						if (gameState.score==numBalls) {
 							gameState.scene='youwon';
+							soundEffect('Feel.m4r');
 						}
 						// make the ball drop below the scene ..
 						// threejs doesn't let us remove it from the schene...
@@ -235,6 +236,12 @@ The user moves a cube around the board trying to knock balls into a cone
 			sound.setBuffer( buffer );
 			sound.setLoop( false );
 			sound.setVolume( 0.5 );
+			sound.play();
+		})
+		audioLoader.load('/sounds/Feel.m4r', function( buffer ) {
+			sound.setBuffer( buffer );
+			sound.setLoop( true );
+			sound.setVolume(0.05);
 			sound.play();
 		});
 	}
@@ -441,6 +448,8 @@ The user moves a cube around the board trying to knock balls into a cone
 			case "ArrowRight": avatarCam.translateY(-1);break;
 			case "ArrowUp": avatarCam.translateZ(-1);break;
 			case "ArrowDown": avatarCam.translateZ(1);break;
+			case "q": avatarCam.rotateY(30 * Math.PI / 180); break;
+			case "e": avatarCam.rotateY(330 * Math.PI / 180); break;
 
 		}
 
